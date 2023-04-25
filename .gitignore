@@ -5,3 +5,4 @@
 venv
 credentials*.json
 logging.txt
+/pdfs
