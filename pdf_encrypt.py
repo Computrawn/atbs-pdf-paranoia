@@ -14,7 +14,7 @@ logging.basicConfig(
     filename="logging.txt",
     format="%(asctime)s -  %(levelname)s -  %(message)s",
 )
-# logging.disable(logging.CRITICAL)  # Note out to enable logging.
+logging.disable(logging.CRITICAL)  # Note out to enable logging.
 
 
 user_path = input("Please type path to top-level directory here: ")
@@ -49,22 +49,19 @@ def encrypt_pdfs():
                 pdf_writer.write(enc_file)
 
 
-def check_and_trash():
+def trash_originals():
+    """If PDF encryption is successful, send original to trash."""
     updated_pdf_paths = find_pdfs(user_path)
     encrypted_pdfs = []
-    unencrypted_pdfs = []
     for pdf in updated_pdf_paths:
         pdf_reader = PdfReader(pdf)
 
         if pdf_reader.is_encrypted:
             encrypted_pdfs.append(pdf)
-        else:
-            unencrypted_pdfs.append(pdf)
 
-    if len(encrypted_pdfs) == len(unencrypted_pdfs):
-        for pdf in unencrypted_pdfs:
-            send2trash(pdf)
+    for pdf in encrypted_pdfs:
+        send2trash(f"{pdf[:-14]}.pdf")
 
 
 encrypt_pdfs()
-check_and_trash()
+trash_originals()
