@@ -5,6 +5,7 @@
 import fnmatch
 import logging
 import os
+import sys
 from send2trash import send2trash
 from PyPDF2 import PdfReader, PdfWriter
 
@@ -24,33 +25,38 @@ def find_pdfs(path):
     for all PDFs nested in user-defined directory."""
     pdf_paths = [
         root + "/" + filename
-        for root, dirnames, filenames in os.walk(path)
+        for root, _, filenames in os.walk(path)
         for filename in fnmatch.filter(filenames, "*.pdf")
     ]
     return pdf_paths
 
 
-def encrypt_pdfs(pdfs):
+def encrypt_pdfs():
     """Encrypt all pdfs in pdf_list."""
-    # pdf_input_password = input("Please type password to encrypt files here: ")
-    pdf_env_password = os.environ.get("PDF_PASS")
+    pdfs = find_pdfs(user_path)
+    cmd_line_password = sys.argv[1]
+
     for pdf in pdfs:
         pdf_reader = PdfReader(pdf)
         pdf_writer = PdfWriter()
 
-        for page in pdf_reader.pages:
-            pdf_writer.add_page(page)
-        # pdf_writer.encrypt(pdf_input_password)
-        pdf_writer.encrypt(pdf_env_password)
+        if not pdf_reader.is_encrypted:
+            for page in pdf_reader.pages:
+                pdf_writer.add_page(page)
+            pdf_writer.encrypt(cmd_line_password)
 
-        with open(f"{pdf[:-4]}_encrypted.pdf", "wb") as enc_file:
-            pdf_writer.write(enc_file)
+            with open(f"{pdf[:-4]}_encrypted.pdf", "wb") as enc_file:
+                pdf_writer.write(enc_file)
 
 
 def trash_originals():
-    # TODO: Check if PDF is encrypted. If it is, delete the original.
-    pass
+    updated_pdf_paths = find_pdfs(user_path)
+
+    for pdf in updated_pdf_paths:
+        pdf_reader = PdfReader(pdf)
+        if pdf_reader.is_encrypted:
+            logging.info(pdf_reader)
 
 
-pdf_list = find_pdfs(user_path)
-encrypt_pdfs(pdf_list)
+encrypt_pdfs()
+# trash_originals()
