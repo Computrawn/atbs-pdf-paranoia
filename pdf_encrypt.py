@@ -49,14 +49,22 @@ def encrypt_pdfs():
                 pdf_writer.write(enc_file)
 
 
-def trash_originals():
+def check_and_trash():
     updated_pdf_paths = find_pdfs(user_path)
-
+    encrypted_pdfs = []
+    unencrypted_pdfs = []
     for pdf in updated_pdf_paths:
         pdf_reader = PdfReader(pdf)
+
         if pdf_reader.is_encrypted:
-            logging.info(pdf_reader)
+            encrypted_pdfs.append(pdf)
+        else:
+            unencrypted_pdfs.append(pdf)
+
+    if len(encrypted_pdfs) == len(unencrypted_pdfs):
+        for pdf in unencrypted_pdfs:
+            send2trash(pdf)
 
 
 encrypt_pdfs()
-# trash_originals()
+check_and_trash()
