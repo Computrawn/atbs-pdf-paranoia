@@ -43,16 +43,14 @@ def encrypt_pdfs(pdfs):
         # pdf_writer.encrypt(pdf_input_password)
         pdf_writer.encrypt(pdf_env_password)
 
-        with open(f"{pdf}_encrypted.pdf", "wb") as enc_file:
+        with open(f"{pdf[:-4]}_encrypted.pdf", "wb") as enc_file:
             pdf_writer.write(enc_file)
 
 
-def trash_originals(pdfs):
-    """Send all unecrypted pdfs to trash."""
-    for pdf in pdfs:
-        send2trash(pdf)
+def trash_originals():
+    # TODO: Check if PDF is encrypted. If it is, delete the original.
+    pass
 
 
 pdf_list = find_pdfs(user_path)
 encrypt_pdfs(pdf_list)
-trash_originals(pdf_list)
