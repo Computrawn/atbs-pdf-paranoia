@@ -18,6 +18,12 @@ logging.basicConfig(
 logging.disable(logging.CRITICAL)  # Note out to enable logging.
 
 
+def main():
+    user_path = input("Please type path to top-level directory here: ")
+    encrypt_pdfs(find_pdfs(user_path))
+    trash_originals(user_path)
+
+
 def find_pdfs(path):
     """Use os.walk and fnmatch.filter to create list of absolute paths
     for all PDFs nested in user-defined directory."""
@@ -32,7 +38,7 @@ def find_pdfs(path):
 def encrypt_pdfs(pdf_path):
     """Encrypt all pdfs in pdf_list."""
     # cmd_line_password = sys.argv[1]
-    cmd_line_password = "password"
+    cmd_line_password = "password"  # Default password for testing
 
     for pdf in pdf_path:
         pdf_reader = PdfReader(pdf)
@@ -54,12 +60,6 @@ def trash_originals(user_path):
     ]
     for pdf in encrypted_pdfs:
         send2trash(f"{pdf[:-14]}.pdf")
-
-
-def main():
-    user_path = input("Please type path to top-level directory here: ")
-    encrypt_pdfs(find_pdfs(user_path))
-    trash_originals(user_path)
 
 
 if __name__ == "__main__":
