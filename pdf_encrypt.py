@@ -1,11 +1,12 @@
-#! python3
+#!/usr/bin/env python3
 # pdf_paranoia.py — An exercise in manipulating PDFs.
-# For more information, see project_details.txt.
+# For more information, see README.md
 
 import fnmatch
 import logging
 import os
-import sys
+
+# import sys
 from send2trash import send2trash
 from PyPDF2 import PdfReader, PdfWriter
 
@@ -15,9 +16,6 @@ logging.basicConfig(
     format="%(asctime)s -  %(levelname)s -  %(message)s",
 )
 logging.disable(logging.CRITICAL)  # Note out to enable logging.
-
-
-user_path = input("Please type path to top-level directory here: ")
 
 
 def find_pdfs(path):
@@ -31,12 +29,12 @@ def find_pdfs(path):
     return pdf_paths
 
 
-def encrypt_pdfs():
+def encrypt_pdfs(pdf_path):
     """Encrypt all pdfs in pdf_list."""
-    pdfs = find_pdfs(user_path)
-    cmd_line_password = sys.argv[1]
+    # cmd_line_password = sys.argv[1]
+    cmd_line_password = "password"
 
-    for pdf in pdfs:
+    for pdf in pdf_path:
         pdf_reader = PdfReader(pdf)
         pdf_writer = PdfWriter()
 
@@ -49,19 +47,20 @@ def encrypt_pdfs():
                 pdf_writer.write(enc_file)
 
 
-def trash_originals():
+def trash_originals(user_path):
     """If PDF encryption is successful, send original to trash."""
-    updated_pdf_paths = find_pdfs(user_path)
-    encrypted_pdfs = []
-    for pdf in updated_pdf_paths:
-        pdf_reader = PdfReader(pdf)
-
-        if pdf_reader.is_encrypted:
-            encrypted_pdfs.append(pdf)
-
+    encrypted_pdfs = [
+        pdf for pdf in find_pdfs(user_path) if PdfReader(pdf).is_encrypted
+    ]
     for pdf in encrypted_pdfs:
         send2trash(f"{pdf[:-14]}.pdf")
 
 
-encrypt_pdfs()
-trash_originals()
+def main():
+    user_path = input("Please type path to top-level directory here: ")
+    encrypt_pdfs(find_pdfs(user_path))
+    trash_originals(user_path)
+
+
+if __name__ == "__main__":
+    main()
