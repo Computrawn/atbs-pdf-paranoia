@@ -1,11 +1,11 @@
-#! python3
+#!/usr/bin/env python3
 # pdf_decrypt.py — An exercise in manipulating PDFs.
-# For more information, see second paragraph of project_details.txt.
+# For more information, see README.md
 
-import fnmatch
 import logging
-import os
 from PyPDF2 import PdfReader, PdfWriter
+from PyPDF2.errors import FileNotDecryptedError
+from pdf_encrypt import find_pdfs
 
 
 logging.basicConfig(
@@ -16,29 +16,15 @@ logging.basicConfig(
 logging.disable(logging.CRITICAL)  # Note out to enable logging.
 
 
-user_path = input("Please type path to top-level directory here: ")
-
-
-def find_pdfs(path):
-    """Use os.walk and fnmatch.filter to create list of absolute paths
-    for all PDFs nested in user-defined directory."""
-    pdf_paths = [
-        root + "/" + filename
-        for root, _, filenames in os.walk(path)
-        for filename in fnmatch.filter(filenames, "*.pdf")
-    ]
-    return pdf_paths
-
-
-def decrypt_pdfs():
+def decrypt_pdfs(pdf_list):
     """If encrpyted file found, try to decrypt with user-defined password."""
-    pdf_list = find_pdfs(user_path)
     password = input("Please type password here: ")
-    for pdf in pdf_list:
-        pdf_reader = PdfReader(pdf)
-        pdf_writer = PdfWriter()
 
-        try:
+    try:
+        for pdf in pdf_list:
+            pdf_reader = PdfReader(pdf)
+            pdf_writer = PdfWriter()
+
             if pdf_reader.is_encrypted:
                 pdf_reader.decrypt(password)
 
@@ -48,8 +34,13 @@ def decrypt_pdfs():
             with open(f"{pdf[:-14]}_decrpyted.pdf", "wb") as f:
                 pdf_writer.write(f)
 
-        except Exception as e:
-            print(f"{e}: Password {password} is incorrect.")
+    except FileNotDecryptedError:
+        print(f"Password {password} is incorrect.")
 
 
-decrypt_pdfs()
+def main():
+    decrypt_pdfs(find_pdfs(input("Please type path to top-level directory here: ")))
+
+
+if __name__ == "__main__":
+    main()
